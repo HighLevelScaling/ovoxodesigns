@@ -1,6 +1,12 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { 
+  InsertUser, users, 
+  logos, InsertLogo, Logo,
+  brandKits, InsertBrandKit, BrandKit,
+  purchases, InsertPurchase, Purchase,
+  logoGenerations, InsertLogoGeneration
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +95,120 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Logo functions
+export async function createLogo(logo: InsertLogo): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(logos).values(logo);
+  return Number(result[0].insertId);
+}
+
+export async function updateLogo(id: number, updates: Partial<InsertLogo>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(logos).set(updates).where(eq(logos.id, id));
+}
+
+export async function getLogoById(id: number): Promise<Logo | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(logos).where(eq(logos.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getUserLogos(userId: number): Promise<Logo[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(logos).where(eq(logos.userId, userId)).orderBy(desc(logos.createdAt));
+}
+
+// Brand Kit functions
+export async function createBrandKit(brandKit: InsertBrandKit): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(brandKits).values(brandKit);
+  return Number(result[0].insertId);
+}
+
+export async function updateBrandKit(id: number, updates: Partial<InsertBrandKit>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(brandKits).set(updates).where(eq(brandKits.id, id));
+}
+
+export async function getBrandKitById(id: number): Promise<BrandKit | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(brandKits).where(eq(brandKits.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getUserBrandKits(userId: number): Promise<BrandKit[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(brandKits).where(eq(brandKits.userId, userId)).orderBy(desc(brandKits.createdAt));
+}
+
+// Purchase functions
+export async function createPurchase(purchase: InsertPurchase): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(purchases).values(purchase);
+  return Number(result[0].insertId);
+}
+
+export async function updatePurchase(id: number, updates: Partial<InsertPurchase>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(purchases).set(updates).where(eq(purchases.id, id));
+}
+
+export async function getPurchaseBySessionId(sessionId: string): Promise<Purchase | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(purchases).where(eq(purchases.stripeSessionId, sessionId)).limit(1);
+  return result[0];
+}
+
+export async function getUserPurchases(userId: number): Promise<Purchase[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(purchases).where(eq(purchases.userId, userId)).orderBy(desc(purchases.createdAt));
+}
+
+export async function getCompletedPurchases(userId: number): Promise<Purchase[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(purchases)
+    .where(and(eq(purchases.userId, userId), eq(purchases.status, 'completed')))
+    .orderBy(desc(purchases.createdAt));
+}
+
+// Logo Generation tracking
+export async function createLogoGeneration(gen: InsertLogoGeneration): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(logoGenerations).values(gen);
+  return Number(result[0].insertId);
+}
+
+export async function updateLogoGeneration(id: number, updates: Partial<InsertLogoGeneration>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(logoGenerations).set(updates).where(eq(logoGenerations.id, id));
+}
