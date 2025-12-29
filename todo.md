@@ -53,4 +53,8 @@
 - [ ] Fix pricing page not working
 
 ## Deployment
-- [ ] Create GitHub repository and push all code
+- [x] Create GitHub repository and push all code
+
+## Rebranding
+- [x] Rename GitHub repository to ovoxodesigns
+- [x] Update app branding to ovoxodesigns

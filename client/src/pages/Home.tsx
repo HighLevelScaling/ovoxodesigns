@@ -22,7 +22,7 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-bold text-xl">LogoForge</span>
+            <span className="font-bold text-xl">OvoxoDesigns</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
@@ -229,7 +229,7 @@ export default function Home() {
           <div className="container">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-4">Ready to Create Your Logo?</h2>
-              <p className="text-muted-foreground mb-8">Join thousands of businesses who trust LogoForge for their branding needs.</p>
+              <p className="text-muted-foreground mb-8">Join thousands of businesses who trust OvoxoDesigns for their branding needs.</p>
               {isAuthenticated ? (
                 <Link href="/create"><Button size="lg" className="gap-2">Start Creating <ArrowRight className="w-4 h-4" /></Button></Link>
               ) : (
@@ -248,9 +248,9 @@ export default function Home() {
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="font-bold">LogoForge</span>
+              <span className="font-bold">OvoxoDesigns</span>
             </div>
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} LogoForge. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} OvoxoDesigns. All rights reserved.</p>
           </div>
         </div>
       </footer>
