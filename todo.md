@@ -46,3 +46,11 @@
 
 ## New Features
 - [x] Logo preview step before payment - show AI-generated logos before checkout
+
+## Bug Fixes
+- [ ] Remove web address area at top of app
+- [ ] Fix account creation and login flow
+- [ ] Fix pricing page not working
+
+## Deployment
+- [ ] Create GitHub repository and push all code
