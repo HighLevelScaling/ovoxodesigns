@@ -43,3 +43,6 @@
 - [x] Competitor pricing analysis (Looka, Canva, etc.)
 - [x] Pricing strategy with 65% profit margin
 - [x] Interactive research results webpage
+
+## New Features
+- [x] Logo preview step before payment - show AI-generated logos before checkout

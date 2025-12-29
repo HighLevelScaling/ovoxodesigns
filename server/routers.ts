@@ -129,6 +129,38 @@ export const appRouter = router({
   }),
 
   logo: router({
+    // Preview endpoint - generates a single logo preview before payment
+    preview: protectedProcedure
+      .input(z.object({
+        companyName: z.string().min(1),
+        tagline: z.string().optional(),
+        industry: z.string().optional(),
+        style: z.string().optional(),
+        colorScheme: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { companyName, tagline, industry, style, colorScheme } = input;
+
+        try {
+          // Generate 3 preview logos
+          const logos = await generateLogoVariations({ companyName, tagline, industry, style, colorScheme }, 3);
+          
+          return { 
+            success: true, 
+            previews: logos.map((logo, index) => ({
+              index,
+              imageUrl: logo.imageUrl,
+              prompt: logo.prompt,
+            }))
+          };
+        } catch (error) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to generate logo previews',
+          });
+        }
+      }),
+
     generate: protectedProcedure
       .input(z.object({
         purchaseId: z.number().optional(),

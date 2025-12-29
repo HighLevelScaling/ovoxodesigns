@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { trpc } from "@/lib/trpc";
@@ -12,7 +11,7 @@ import { getLoginUrl } from "@/const";
 import { Link, useLocation, useSearch } from "wouter";
 import { toast } from "sonner";
 import { 
-  Sparkles, ArrowLeft, ArrowRight, Loader2, Check, CreditCard
+  Sparkles, ArrowLeft, ArrowRight, Loader2, Check, CreditCard, RefreshCw, Image
 } from "lucide-react";
 
 const INDUSTRIES = [
@@ -47,6 +46,12 @@ const PACKAGES = {
 
 type PackageType = keyof typeof PACKAGES;
 
+interface LogoPreview {
+  index: number;
+  imageUrl: string;
+  prompt: string;
+}
+
 export default function Create() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [, navigate] = useLocation();
@@ -61,6 +66,8 @@ export default function Create() {
     colorScheme: "blue",
   });
   const [selectedPackage, setSelectedPackage] = useState<PackageType>("premium");
+  const [logoPreviews, setLogoPreviews] = useState<LogoPreview[]>([]);
+  const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number>(0);
 
   // Parse package from URL
   useEffect(() => {
@@ -71,6 +78,19 @@ export default function Create() {
     }
   }, [searchParams]);
 
+  const previewMutation = trpc.logo.preview.useMutation({
+    onSuccess: (data) => {
+      if (data.success && data.previews) {
+        setLogoPreviews(data.previews);
+        setSelectedPreviewIndex(0);
+        toast.success("Logo previews generated!");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate logo previews");
+    },
+  });
+
   const checkoutMutation = trpc.checkout.create.useMutation({
     onSuccess: (data) => {
       toast.success("Redirecting to checkout...");
@@ -80,6 +100,21 @@ export default function Create() {
       toast.error(error.message || "Failed to create checkout session");
     },
   });
+
+  const handleGeneratePreview = () => {
+    if (!formData.companyName.trim()) {
+      toast.error("Please enter your company name");
+      return;
+    }
+
+    previewMutation.mutate({
+      companyName: formData.companyName,
+      tagline: formData.tagline || undefined,
+      industry: formData.industry || undefined,
+      style: formData.style,
+      colorScheme: formData.colorScheme,
+    });
+  };
 
   const handleSubmit = () => {
     if (!formData.companyName.trim()) {
@@ -97,6 +132,14 @@ export default function Create() {
         colorScheme: formData.colorScheme,
       },
     });
+  };
+
+  const goToPreviewStep = () => {
+    setStep(3);
+    // Auto-generate previews when entering the preview step
+    if (logoPreviews.length === 0) {
+      handleGeneratePreview();
+    }
   };
 
   if (authLoading) {
@@ -143,16 +186,16 @@ export default function Create() {
             <span className="font-bold text-xl">LogoForge</span>
           </Link>
           
-          {/* Progress indicator */}
+          {/* Progress indicator - now 4 steps */}
           <div className="hidden sm:flex items-center gap-2">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4].map((s) => (
               <div key={s} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step >= s ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                 }`}>
                   {step > s ? <Check className="w-4 h-4" /> : s}
                 </div>
-                {s < 3 && <div className={`w-12 h-0.5 ${step > s ? "bg-primary" : "bg-muted"}`} />}
+                {s < 4 && <div className={`w-8 h-0.5 ${step > s ? "bg-primary" : "bg-muted"}`} />}
               </div>
             ))}
           </div>
@@ -273,46 +316,159 @@ export default function Create() {
                 <Button variant="ghost" onClick={() => setStep(1)}>
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button onClick={() => setStep(3)}>
-                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                <Button onClick={goToPreviewStep}>
+                  Generate Previews <Sparkles className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Step 3: Package Selection & Checkout */}
+        {/* Step 3: Logo Preview */}
         {step === 3 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Preview Your Logos</CardTitle>
+              <CardDescription>
+                Here are your AI-generated logo concepts. Select your favorite or regenerate for new options.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {previewMutation.isPending ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="relative">
+                    <Loader2 className="w-16 h-16 animate-spin text-primary" />
+                    <Sparkles className="w-6 h-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                  </div>
+                  <p className="mt-4 text-lg font-medium">Creating your logos...</p>
+                  <p className="text-sm text-muted-foreground">This usually takes 10-30 seconds</p>
+                </div>
+              ) : logoPreviews.length > 0 ? (
+                <>
+                  {/* Main selected preview */}
+                  <div className="relative aspect-square max-w-md mx-auto rounded-xl overflow-hidden bg-gradient-to-br from-muted/50 to-muted border-2 border-primary">
+                    <img 
+                      src={logoPreviews[selectedPreviewIndex]?.imageUrl} 
+                      alt={`Logo preview ${selectedPreviewIndex + 1}`}
+                      className="w-full h-full object-contain p-8"
+                    />
+                    <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+                      Option {selectedPreviewIndex + 1}
+                    </div>
+                  </div>
+
+                  {/* Thumbnail selection */}
+                  <div className="flex justify-center gap-4">
+                    {logoPreviews.map((preview, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedPreviewIndex(index)}
+                        className={`relative w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${
+                          selectedPreviewIndex === index 
+                            ? "border-primary ring-2 ring-primary/20" 
+                            : "border-muted hover:border-primary/50"
+                        }`}
+                      >
+                        <img 
+                          src={preview.imageUrl} 
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-full h-full object-contain p-2 bg-muted/30"
+                        />
+                        {selectedPreviewIndex === index && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                            <Check className="w-6 h-6 text-primary" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Regenerate button */}
+                  <div className="flex justify-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={handleGeneratePreview}
+                      disabled={previewMutation.isPending}
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Generate New Options
+                    </Button>
+                  </div>
+
+                  {/* Summary */}
+                  <div className="rounded-lg bg-muted/50 p-4">
+                    <h4 className="font-medium mb-2">Your Logo Details</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <span className="text-muted-foreground">Company:</span>
+                      <span>{formData.companyName}</span>
+                      {formData.tagline && (
+                        <>
+                          <span className="text-muted-foreground">Tagline:</span>
+                          <span>{formData.tagline}</span>
+                        </>
+                      )}
+                      <span className="text-muted-foreground">Style:</span>
+                      <span className="capitalize">{formData.style}</span>
+                      <span className="text-muted-foreground">Colors:</span>
+                      <span className="capitalize">{formData.colorScheme}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Image className="w-16 h-16 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No previews generated yet</p>
+                  <Button className="mt-4" onClick={handleGeneratePreview}>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate Previews
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <Button variant="ghost" onClick={() => setStep(2)}>
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                </Button>
+                <Button 
+                  onClick={() => setStep(4)} 
+                  disabled={logoPreviews.length === 0 || previewMutation.isPending}
+                >
+                  Continue to Checkout <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 4: Package Selection & Checkout */}
+        {step === 4 && (
           <Card>
             <CardHeader>
               <CardTitle>Choose your package</CardTitle>
               <CardDescription>Select the package that best fits your needs</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Summary */}
-              <div className="rounded-lg bg-muted/50 p-4">
-                <h4 className="font-medium mb-2">Your Logo Details</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <span className="text-muted-foreground">Company:</span>
-                  <span>{formData.companyName}</span>
-                  {formData.tagline && (
-                    <>
-                      <span className="text-muted-foreground">Tagline:</span>
-                      <span>{formData.tagline}</span>
-                    </>
-                  )}
-                  {formData.industry && (
-                    <>
-                      <span className="text-muted-foreground">Industry:</span>
-                      <span>{formData.industry}</span>
-                    </>
-                  )}
-                  <span className="text-muted-foreground">Style:</span>
-                  <span className="capitalize">{formData.style}</span>
-                  <span className="text-muted-foreground">Colors:</span>
-                  <span className="capitalize">{formData.colorScheme}</span>
+              {/* Selected Logo Preview */}
+              {logoPreviews[selectedPreviewIndex] && (
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-background border">
+                    <img 
+                      src={logoPreviews[selectedPreviewIndex].imageUrl} 
+                      alt="Selected logo"
+                      className="w-full h-full object-contain p-2"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">{formData.companyName}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {formData.style.charAt(0).toUpperCase() + formData.style.slice(1)} style • {formData.colorScheme.charAt(0).toUpperCase() + formData.colorScheme.slice(1)} colors
+                    </p>
+                    <Button variant="link" className="p-0 h-auto text-sm" onClick={() => setStep(3)}>
+                      Change selection
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Package Selection */}
               <RadioGroup value={selectedPackage} onValueChange={(v) => setSelectedPackage(v as PackageType)}>
@@ -327,7 +483,7 @@ export default function Create() {
                         }`}
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`w-4 h-4 rounded-full border-2 ${
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                             selectedPackage === id ? "border-primary bg-primary" : "border-muted"
                           }`}>
                             {selectedPackage === id && <Check className="w-3 h-3 text-primary-foreground" />}
@@ -352,7 +508,7 @@ export default function Create() {
               </RadioGroup>
 
               <div className="flex justify-between">
-                <Button variant="ghost" onClick={() => setStep(2)}>
+                <Button variant="ghost" onClick={() => setStep(3)}>
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
                 <Button onClick={handleSubmit} disabled={checkoutMutation.isPending}>
