@@ -58,3 +58,10 @@
 ## Rebranding
 - [x] Rename GitHub repository to ovoxodesigns
 - [x] Update app branding to ovoxodesigns
+
+## Critical Bugs
+- [ ] Fix login flow - users cannot access design page after authentication
+
+## SEO Fixes
+- [x] Add meta description (50-160 characters) to homepage
+- [x] Add meta keywords to homepage
