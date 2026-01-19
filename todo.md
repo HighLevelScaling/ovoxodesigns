@@ -65,3 +65,6 @@
 ## SEO Fixes
 - [x] Add meta description (50-160 characters) to homepage
 - [x] Add meta keywords to homepage
+
+## New Features (Requested)
+- [x] Add customer testimonials section to landing page

@@ -29,6 +29,7 @@ export default function Home() {
             <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
             <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
+            <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -224,8 +225,85 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-20">
+          <div className="container">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Loved by Businesses Worldwide</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">See what our customers have to say about their experience with OvoxoDesigns.</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {[
+                {
+                  name: "Sarah Mitchell",
+                  role: "Founder, TechStart",
+                  avatar: "SM",
+                  rating: 5,
+                  text: "I was blown away by the quality of the logo I received. Within minutes, I had a professional brand identity that would have cost me hundreds elsewhere. The $9 premium package was an absolute steal!"
+                },
+                {
+                  name: "Marcus Johnson",
+                  role: "CEO, GreenLeaf Co.",
+                  avatar: "MJ",
+                  rating: 5,
+                  text: "The brand kit exceeded all my expectations. Business cards, letterheads, email signatures - everything was perfectly cohesive. My clients now comment on how professional our materials look."
+                },
+                {
+                  name: "Emily Chen",
+                  role: "Creative Director, Artisan Studio",
+                  avatar: "EC",
+                  rating: 5,
+                  text: "As a designer myself, I was skeptical of AI-generated logos. But OvoxoDesigns proved me wrong. The transparent backgrounds and high-resolution files are exactly what professionals need."
+                },
+                {
+                  name: "David Rodriguez",
+                  role: "Owner, Fresh Bites Cafe",
+                  avatar: "DR",
+                  rating: 5,
+                  text: "Starting a small business on a tight budget, I couldn't afford a design agency. OvoxoDesigns gave me a logo I'm proud to display on my storefront and menus. Best $5 I ever spent!"
+                },
+                {
+                  name: "Jennifer Park",
+                  role: "Marketing Manager, Elevate Inc.",
+                  avatar: "JP",
+                  rating: 5,
+                  text: "We needed logos for multiple sub-brands quickly. The regeneration feature let us explore dozens of options until we found the perfect fit for each. Incredible value and speed."
+                },
+                {
+                  name: "Alex Thompson",
+                  role: "Freelance Consultant",
+                  avatar: "AT",
+                  rating: 5,
+                  text: "The commercial license included with every purchase is a game-changer. I use my logo everywhere - website, social media, merchandise - without worrying about licensing fees."
+                }
+              ].map((testimonial, i) => (
+                <Card key={i} className="border-0 shadow-sm">
+                  <CardContent className="pt-6">
+                    <div className="flex gap-1 mb-4">
+                      {[...Array(testimonial.rating)].map((_, j) => (
+                        <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground text-sm mb-4">"{testimonial.text}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-sm font-semibold text-primary">{testimonial.avatar}</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{testimonial.name}</p>
+                        <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
-        <section className="py-20">
+        <section className="py-20 bg-muted/30">
           <div className="container">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-4">Ready to Create Your Logo?</h2>
